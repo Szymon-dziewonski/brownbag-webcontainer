@@ -37,7 +37,6 @@ async function installDependencies(terminal) {
   const installProcess = await webcontainerInstance.spawn('npm', ['install']);
   installProcess.output.pipeTo(new WritableStream({
     write(data) {
-      console.log(data);
       terminal.write(data);
     }
   }))
