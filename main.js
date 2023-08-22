@@ -28,8 +28,6 @@ window.addEventListener('load', async () => {
   };
 
   startDevServer(terminal);
-
-  startShell(terminal);
 });
 
 async function installDependencies(terminal) {
@@ -44,27 +42,6 @@ async function installDependencies(terminal) {
   // Wait for install command to exit
   return installProcess.exit;
 }
-
-/**
- * @param {Terminal} terminal
- */
-async function startShell(terminal) {
-  const shellProcess = await webcontainerInstance.spawn('jsh');
-  shellProcess.output.pipeTo(
-    new WritableStream({
-      write(data) {
-        terminal.write(data);
-      },
-    })
-  );
-
-  const input = shellProcess.input.getWriter();
-  terminal.onData((data) => {
-    input.write(data);
-  });
-  return shellProcess;
-};
-
 
 async function startDevServer(terminal) {
   // Run `npm run start` to start the Express app
