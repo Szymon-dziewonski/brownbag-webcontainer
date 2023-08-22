@@ -7,7 +7,6 @@ export const files = {
         <html>
           <head>
             <title>Webcontainer brownbag</title>
-            <link rel="stylesheet" type="text/css" href="styles.css" />
           </head>
           <body>
             Such a cool tool, this runs locally!
