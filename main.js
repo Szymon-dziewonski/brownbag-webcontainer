@@ -1,43 +1,82 @@
 import './style.css'
 import { WebContainer } from '@webcontainer/api';
 import { files } from './files';
+import { Terminal } from 'xterm'
+import 'xterm/css/xterm.css';
 
 /** @type {import('@webcontainer/api').WebContainer}  */
 let webcontainerInstance;
 
 window.addEventListener('load', async () => {
-  textareaEl.value = files['index.js'].file.contents;
+  textareaEl.value = files['index.html'].file.contents;
   textareaEl.addEventListener('input', (e) => {
-    writeIndexJS(e.currentTarget.value);
+    writeIndexHTML(e.currentTarget.value);
   });
+
+  const terminal = new Terminal({
+    convertEol: true,
+  });
+  terminal.open(terminalEl);
 
   // Call only once
   webcontainerInstance = await WebContainer.boot();
   await webcontainerInstance.mount(files);
 
-  const exitCode = await installDependencies();
+  const exitCode = await installDependencies(terminal);
   if (exitCode !== 0) {
     throw new Error('Installation failed');
   };
 
-  startDevServer();
+  startDevServer(terminal);
+
+  startShell(terminal);
 });
 
-async function installDependencies() {
+async function installDependencies(terminal) {
   // Install dependencies
   const installProcess = await webcontainerInstance.spawn('npm', ['install']);
   installProcess.output.pipeTo(new WritableStream({
     write(data) {
       console.log(data);
+      terminal.write(data);
     }
   }))
   // Wait for install command to exit
   return installProcess.exit;
 }
 
-async function startDevServer() {
+/**
+ * @param {Terminal} terminal
+ */
+async function startShell(terminal) {
+  const shellProcess = await webcontainerInstance.spawn('jsh');
+  shellProcess.output.pipeTo(
+    new WritableStream({
+      write(data) {
+        terminal.write(data);
+      },
+    })
+  );
+
+  const input = shellProcess.input.getWriter();
+  terminal.onData((data) => {
+    input.write(data);
+  });
+  return shellProcess;
+};
+
+
+async function startDevServer(terminal) {
   // Run `npm run start` to start the Express app
-  await webcontainerInstance.spawn('npm', ['run', 'start']);
+  const serverProcess = await webcontainerInstance.spawn('npm', ['run', 'start']);
+
+  serverProcess.output.pipeTo(
+    new WritableStream({
+      write(data) {
+        terminal.write(data);
+      },
+    })
+  );
 
   // Wait for `server-ready` event
   webcontainerInstance.on('server-ready', (port, url) => {
@@ -45,15 +84,13 @@ async function startDevServer() {
   });
 }
 
-/**
- * @param {string} content
- */
-
-async function writeIndexJS(content) {
-  await webcontainerInstance.fs.writeFile('/index.js', content);
+async function writeIndexHTML(content) {
+  await webcontainerInstance.fs.writeFile('/index.html', content);
 }
 
 document.querySelector('#app').innerHTML = `
+  <button class="add-css" type="button">Add css</button>
+
   <div class="container">
     <div class="editor">
       <textarea>I am a textarea</textarea>
@@ -62,6 +99,7 @@ document.querySelector('#app').innerHTML = `
       <iframe src="loading.html"></iframe>
     </div>
   </div>
+  <div class="terminal"></div>
 `
 
 /** @type {HTMLIFrameElement | null} */
@@ -69,3 +107,23 @@ const iframeEl = document.querySelector('iframe');
 
 /** @type {HTMLTextAreaElement | null} */
 const textareaEl = document.querySelector('textarea');
+
+/** @type {HTMLTextAreaElement | null} */
+const terminalEl = document.querySelector('.terminal');
+
+/** @type {HTMLButtonElement | null} */
+const buttonEl = document.querySelector('.add-css');
+
+
+const stylesCssFile = {
+  file: {
+    contents: `
+      body { background-color: green; }
+    `,
+  },
+}
+
+buttonEl.addEventListener('click', async () => {
+  files['styles.css'] = stylesCssFile;
+  await webcontainerInstance.mount(files);
+});

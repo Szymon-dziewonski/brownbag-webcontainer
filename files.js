@@ -1,36 +1,34 @@
 /** @satisfies {import('@webcontainer/api').FileSystemTree} */
 
 export const files = {
-    'index.js': {
-      file: {
-        contents: `
-import express from 'express';
-const app = express();
-const port = 3111;
-  
-app.get('/', (req, res) => {
-    res.send('Welcome to a WebContainers app! 🥳');
-});
-  
-app.listen(port, () => {
-    console.log(\`App is live at http://localhost:\${port}\`);
-});`,
-      },
+  'index.html': {
+    file: {
+      contents: `
+        <html>
+          <head>
+            <title>Webcontainer brownbag</title>
+            <link rel="stylesheet" type="text/css" href="styles.css" />
+          </head>
+          <body>
+            Such a cool tool, this runs locally!
+          </body>
+        </html>
+      `,
     },
-    'package.json': {
-      file: {
-        contents: `
-          {
-            "name": "example-app",
-            "type": "module",
-            "dependencies": {
-              "express": "latest",
-              "nodemon": "latest"
-            },
-            "scripts": {
-              "start": "nodemon index.js"
-            }
-          }`,
-      },
+  },
+  'package.json': {
+    file: {
+      contents: `
+        {
+          "name": "example-app",
+          "type": "module",
+          "dependencies": {
+            "vite": "latest"
+          },
+          "scripts": {
+            "start": "vite"
+          }
+        }`,
     },
-  };
+  },
+};

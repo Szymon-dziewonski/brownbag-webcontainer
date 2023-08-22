@@ -12,19 +12,6 @@ body {
   margin: 0.5rem 1rem;
 }
 
-header {
-  text-align: center;
-}
-
-header h1 {
-  margin-bottom: 0;
-}
-
-header p {
-  font-size: 1.5rem;
-  margin-top: 0;
-}
-
 iframe,
 textarea {
   border-radius: 3px;
@@ -57,22 +44,8 @@ textarea {
   width: 100%;
 }
 
-.wc {
-  -webkit-text-fill-color: #0000;
-  background-clip: text;
-  -webkit-background-clip: text;
-  background-image: linear-gradient(to right,#761fac 0,#8a19a9 20%,#d900a5 70%,#d917a3 100%);
-  filter: drop-shadow(0 1px 0 #fff);
-  font-weight: 800;
-  color:#69f5ff;
-  text-decoration: underline;
-}
-
-.docs {
-  margin-left: 5px;
-  text-decoration: none;
-  font-weight:600;
-  color:#333;
-  font-size: 80%;
-  text-decoration: underline;
+.add-css {
+  padding: 10px;
+  border: 1px solid blue;
+  margin-bottom: 10px;
 }
