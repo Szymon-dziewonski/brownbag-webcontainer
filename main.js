@@ -89,8 +89,6 @@ async function writeIndexHTML(content) {
 }
 
 document.querySelector('#app').innerHTML = `
-  <button class="add-css" type="button">Add css</button>
-
   <div class="container">
     <div class="editor">
       <textarea>I am a textarea</textarea>
@@ -110,20 +108,3 @@ const textareaEl = document.querySelector('textarea');
 
 /** @type {HTMLTextAreaElement | null} */
 const terminalEl = document.querySelector('.terminal');
-
-/** @type {HTMLButtonElement | null} */
-const buttonEl = document.querySelector('.add-css');
-
-
-const stylesCssFile = {
-  file: {
-    contents: `
-      body { background-color: green; }
-    `,
-  },
-}
-
-buttonEl.addEventListener('click', async () => {
-  files['styles.css'] = stylesCssFile;
-  await webcontainerInstance.mount(files);
-});
