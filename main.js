@@ -1,8 +1,6 @@
 import './style.css'
 import { WebContainer } from '@webcontainer/api';
 import { files } from './files';
-import { Terminal } from 'xterm'
-import 'xterm/css/xterm.css';
 
 /** @type {import('@webcontainer/api').WebContainer}  */
 let webcontainerInstance;
@@ -13,47 +11,33 @@ window.addEventListener('load', async () => {
     writeIndexHTML(e.currentTarget.value);
   });
 
-  const terminal = new Terminal({
-    convertEol: true,
-  });
-  terminal.open(terminalEl);
-
   // Call only once
   webcontainerInstance = await WebContainer.boot();
   await webcontainerInstance.mount(files);
 
-  const exitCode = await installDependencies(terminal);
+  const exitCode = await installDependencies();
   if (exitCode !== 0) {
     throw new Error('Installation failed');
   };
 
-  startDevServer(terminal);
+  startDevServer();
 });
 
-async function installDependencies(terminal) {
+async function installDependencies() {
   // Install dependencies
   const installProcess = await webcontainerInstance.spawn('npm', ['install']);
   installProcess.output.pipeTo(new WritableStream({
     write(data) {
       console.log(data);
-      terminal.write(data);
     }
   }))
   // Wait for install command to exit
   return installProcess.exit;
 }
 
-async function startDevServer(terminal) {
+async function startDevServer() {
   // Run `npm run start` to start the Express app
-  const serverProcess = await webcontainerInstance.spawn('npm', ['run', 'start']);
-
-  serverProcess.output.pipeTo(
-    new WritableStream({
-      write(data) {
-        terminal.write(data);
-      },
-    })
-  );
+  await webcontainerInstance.spawn('npm', ['run', 'start']);
 
   // Wait for `server-ready` event
   webcontainerInstance.on('server-ready', (port, url) => {
@@ -74,7 +58,6 @@ document.querySelector('#app').innerHTML = `
       <iframe src="loading.html"></iframe>
     </div>
   </div>
-  <div class="terminal"></div>
 `
 
 /** @type {HTMLIFrameElement | null} */
@@ -82,6 +65,3 @@ const iframeEl = document.querySelector('iframe');
 
 /** @type {HTMLTextAreaElement | null} */
 const textareaEl = document.querySelector('textarea');
-
-/** @type {HTMLTextAreaElement | null} */
-const terminalEl = document.querySelector('.terminal');
